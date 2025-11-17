@@ -1,3 +1,5 @@
+# 最终签名测试版: 使用官方流程，但修正了分支名称为 master
+
 name: app-build-action-dev
 
 on:
@@ -10,16 +12,13 @@ jobs:
   # 打包Android、iOS、Mac
   build-mac-ios-android:
     runs-on: macos-latest
-
     permissions:
       contents: write
-
     steps:
-      # 签出代码
+      # 签出代码 (已修正)
       - uses: actions/checkout@v4
         with:
-          ref: dev
-
+          ref: master
       # APK签名设置
       - name: Download Android keystore
         id: android_keystore
@@ -33,45 +32,37 @@ jobs:
           echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> simple_live_app/android/key.properties
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> simple_live_app/android/key.properties
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> simple_live_app/android/key.properties
-
       # 设置JAVA环境
       - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: "17"
           cache: "gradle"
-
       # 设置Flutter
       - name: Flutter action
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.22.x'
-          cache: true 
-
+          cache: true
       # 打开MAC Desktop支持
       - name: Enable Flutter Desktop
         run: flutter config --enable-macos-desktop
-
       # 更新Flutter的packages
       - name: Restore packages
         run: |
           cd simple_live_app
           flutter pub get
-
       # 安装appdmg npm install -g appdmg
       - name: Install appdmg
         run: npm install -g appdmg
-
       # 设置flutter_distributor环境
       - name: Install flutter_distributor
         run: dart pub global activate flutter_distributor
-
       # 打包APK
       - name: Build APK
         run: |
           cd simple_live_app
           flutter build apk --release --split-per-abi
-
       #上传Artifacts
       - name: Upload APK to Artifacts
         uses: actions/upload-artifact@v4
@@ -81,7 +72,6 @@ jobs:
             simple_live_app/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             simple_live_app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             simple_live_app/build/app/outputs/flutter-apk/app-x86_64-release.apk
-
       # TV APK签名设置
       - name: Download Android TV keystore
         id: android_tv_keystore
@@ -95,7 +85,6 @@ jobs:
           echo "storePassword=${{ secrets.TV_STORE_PASSWORD }}" >> simple_live_tv_app/android/key.properties
           echo "keyPassword=${{ secrets.TV_KEY_PASSWORD }}" >> simple_live_tv_app/android/key.properties
           echo "keyAlias=${{ secrets.TV_KEY_ALIAS }}" >> simple_live_tv_app/android/key.properties
-
       #打包 Android TV APK
       - name: Build TV APK
         run: |
@@ -110,13 +99,11 @@ jobs:
             simple_live_tv_app/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             simple_live_tv_app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             simple_live_tv_app/build/app/outputs/flutter-apk/app-x86_64-release.apk
-
       #打包iOS
       - name: Build IPA
         run: |
           cd simple_live_app
           flutter build ios --release --no-codesign
-
       #创建未签名ipa
       - name: Create IPA
         run: |
@@ -126,7 +113,6 @@ jobs:
           cd build/ios/iphoneos/
           zip -q -r ios_no_sign.ipa Payload
           cd ../../..
-
       # 上传IPA至Artifacts
       - name: Upload IPA to Artifacts
         uses: actions/upload-artifact@v4
@@ -134,13 +120,11 @@ jobs:
           name: ios
           path: |
             simple_live_app/build/ios/iphoneos/ios_no_sign.ipa
-
       # 打包MAC
       - name: Build MacOS
         run: |
           cd simple_live_app
           flutter_distributor package --platform macos --targets dmg,zip --skip-clean
-      
       # 上传MAC至Artifacts
       - name: Upload MacOS to Artifacts
         uses: actions/upload-artifact@v4
@@ -158,10 +142,10 @@ jobs:
     permissions:
       contents: write
     steps:
-      # 签出代码
+      # 签出代码 (已修正)
       - uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: master
       # 设置Flutter环境
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -197,7 +181,6 @@ jobs:
           path: |
             simple_live_app/build/dist/*/*.deb
             simple_live_app/build/dist/*/*.zip
-
         #完成
       - run: echo "🍏 Linux job's status is ${{ job.status }}."
 
@@ -207,10 +190,10 @@ jobs:
     permissions:
       contents: write
     steps:
-      # 签出代码
+      # 签出代码 (已修正)
       - uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: master
       # 设置Flutter环境
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
